@@ -100,7 +100,7 @@ use the following SQL to obtain answer:
 
   
 **Answer:**
-> "Brooklyn" "Manhattan" "Queens"
+> JFK Airport
 
 
 

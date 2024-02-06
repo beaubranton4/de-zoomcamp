@@ -20,7 +20,7 @@ Which tag has the following text? - *Automatically remove the container when it 
 - `--rmc`
 - `--rm`
 
-  
+---  
 Run: docker run --help
 
 **Answer:**
@@ -37,6 +37,8 @@ What is version of the package *wheel* ?
 - 1.0.0
 - 23.0.1
 - 58.1.0
+
+-----
 
 Run: 
 docker run -it --entrypoint bash python:3.9
@@ -75,10 +77,9 @@ Remember that `lpep_pickup_datetime` and `lpep_dropoff_datetime` columns are in 
 - 15859
 - 89009
 
+----
 
 Use upload_hw_datasets.ipynb to upload data to postgres container
-
-  
 
 In PGAdmin: use the following SQL to obtain answer:
 
@@ -104,6 +105,9 @@ Tip: For every trip on a single day, we only care about the trip with the longes
 - 2019-09-26
 - 2019-09-21
 
+
+----
+
 use the following SQL to obtain answer:
 
     select 
@@ -127,6 +131,8 @@ Which were the 3 pick up Boroughs that had a sum of total_amount superior to 500
 - "Bronx" "Brooklyn" "Manhattan"
 - "Bronx" "Manhattan" "Queens" 
 - "Brooklyn" "Queens" "Staten Island"
+
+-----
 
 use the following SQL to obtain answer:
 
@@ -157,6 +163,8 @@ Note: it's not a typo, it's `tip` , not `trip`
 - Jamaica
 - JFK Airport
 - Long Island City/Queens Plaza
+
+-----
 
 use the following SQL to obtain answer:
 
@@ -199,6 +207,9 @@ terraform apply
 ```
 
 Paste the output of this command into the homework submission form.
+
+
+----
 
 In the folder where we setup main.tf and variables.tf files for the Terraform lectures
 

@@ -1,0 +1,3 @@
+{"operation": "create", "resource": {"type": "pipeline", "uuid": "esoteric_echo"}, "timestamp": 1706676448, "user": null}
+{"operation": "create", "resource": {"type": "pipeline", "uuid": "spring_mountain"}, "timestamp": 1706678886, "user": null}
+{"operation": "create", "resource": {"type": "pipeline", "uuid": "upload_data_to_gcs_copy"}, "timestamp": 1706680471, "user": null}

@@ -18,3 +18,4 @@ serving_dir
 *.json.gsv
 *.csv
 *.csv.gsv
+02-workflow-orchestration/mage-zoomcamp-copy/mage_data

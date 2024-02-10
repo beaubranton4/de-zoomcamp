@@ -21,6 +21,8 @@ root_path = f'{bucket_name}/{table_name}'
 
 
 
+
+
 @data_exporter
 def export_data(data, *args, **kwargs):
 

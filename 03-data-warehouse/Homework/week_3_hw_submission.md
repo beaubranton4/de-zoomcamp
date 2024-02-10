@@ -33,6 +33,8 @@ What is the estimated amount of data that will be read when this query is execut
 - 0 MB for the External Table and 0MB for the Materialized Table
 - 2.14 MB for the External Table and 0MB for the Materialized Table
 
+----
+
 Query the two tables:
 
 SELECT

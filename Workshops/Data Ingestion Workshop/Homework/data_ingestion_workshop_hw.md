@@ -1,0 +1,1 @@
+You can find all code used to answer the data ingestion workshop homework questions in data_ingestion_homework_scripts.ipynb.

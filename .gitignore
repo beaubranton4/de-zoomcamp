@@ -19,3 +19,11 @@ serving_dir
 *.csv
 *.csv.gsv
 02-workflow-orchestration/mage-zoomcamp-copy/mage_data
+05-batch/code/fhvhv/2021/01
+05-batch/code/data
+*.parquet
+*.crc
+*_SUCCESS
+*.jar
+05-batch/code/fhvhv_tripdata_2021-01.csv.gz
+

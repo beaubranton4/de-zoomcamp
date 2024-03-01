@@ -1,0 +1,27 @@
+python 06_spark_sql.py \
+    --input_green='gs://de_zoomcamp_test_bucket/code/06_spark_sql.py/pq/green/2021/*/' \
+    --input_yellow='gs://de_zoomcamp_test_bucket/code/06_spark_sql.py/pq/yellow/2021/*/' \
+    --output=gs://de_zoomcamp_test_bucket/code/06_spark_sql.py/report-2021
+
+#Submit spark job using a local spark cluster
+URL="spark://beaus-mbp.lan:7077"
+
+spark-submit \
+    --master="${URL}" \
+    06_spark_sql.py \
+        --input_green='gs://de_zoomcamp_test_bucket/pq/green/2021/*/' \
+        --input_yellow='gs://de_zoomcamp_test_bucket/pq/yellow/2021/*/' \
+        --output=gs://de_zoomcamp_test_bucket/report-2021
+
+--output=gs://de_zoomcamp_test_bucket/report-2021
+
+# To submit spark job using gcloud cli
+# Can use an orchestrator and base operator to run a pyspark script to submit spark job
+gcloud dataproc jobs submit pyspark \
+    --cluster=de-zoomcamp-cluster \
+    --region=us-west1 \
+    'gs://de_zoomcamp_test_bucket/code/06_spark_sql.py' \
+    -- \
+        --input_green='gs://de_zoomcamp_test_bucket/pq/green/2020/*/' \
+        --input_yellow='gs://de_zoomcamp_test_bucket/pq/yellow/2020/*/' \
+        --output=gs://de_zoomcamp_test_bucket/report-2020-cli

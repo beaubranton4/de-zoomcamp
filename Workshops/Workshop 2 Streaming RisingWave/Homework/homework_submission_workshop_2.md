@@ -102,6 +102,8 @@ p.s. The trip time between taxi zones does not take symmetricity into account, i
 	from t, location_to_location_trip_stats l
 	where t.max_triptime = l.avg_triptime;
 
+> Answer: Yorkville East, Steinway
+
 ## Question 2
 
 Recreate the MV(s) in question 1, to also find the **number of trips** for the pair of taxi zones with the highest average trip time.

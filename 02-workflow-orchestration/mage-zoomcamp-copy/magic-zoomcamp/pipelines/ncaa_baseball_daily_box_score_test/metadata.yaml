@@ -3,21 +3,19 @@ blocks:
   color: null
   configuration: {}
   downstream_blocks:
-  - transform_pitching_box_scores
   - transform_batting_box_scores
-  - transform_fielding_box_scores
   executor_config: null
   executor_type: local_python
   has_callback: false
   language: python
   name: scrape_daily_box_scores
   retry_config: null
-  status: executed
+  status: failed
   timeout: null
   type: data_loader
   upstream_blocks: []
   uuid: scrape_daily_box_scores
-- all_upstream_blocks_executed: true
+- all_upstream_blocks_executed: false
   color: null
   configuration: {}
   downstream_blocks:
@@ -29,46 +27,12 @@ blocks:
   language: python
   name: transform_batting_box_scores
   retry_config: null
-  status: failed
+  status: executed
   timeout: null
   type: transformer
   upstream_blocks:
   - scrape_daily_box_scores
   uuid: transform_batting_box_scores
-- all_upstream_blocks_executed: true
-  color: null
-  configuration: {}
-  downstream_blocks:
-  - export_pitching_box_scores_gcs
-  executor_config: null
-  executor_type: local_python
-  has_callback: false
-  language: python
-  name: transform_pitching_box_scores
-  retry_config: null
-  status: updated
-  timeout: null
-  type: transformer
-  upstream_blocks:
-  - scrape_daily_box_scores
-  uuid: transform_pitching_box_scores
-- all_upstream_blocks_executed: true
-  color: null
-  configuration: {}
-  downstream_blocks:
-  - export_fielding_box_scores_gcs
-  executor_config: null
-  executor_type: local_python
-  has_callback: false
-  language: python
-  name: transform_fielding_box_scores
-  retry_config: null
-  status: updated
-  timeout: null
-  type: transformer
-  upstream_blocks:
-  - scrape_daily_box_scores
-  uuid: transform_fielding_box_scores
 - all_upstream_blocks_executed: false
   color: null
   configuration: {}
@@ -79,44 +43,12 @@ blocks:
   language: python
   name: export_batting_box_scores_to_gcs
   retry_config: null
-  status: updated
+  status: executed
   timeout: null
   type: data_exporter
   upstream_blocks:
   - transform_batting_box_scores
   uuid: export_batting_box_scores_to_gcs
-- all_upstream_blocks_executed: false
-  color: null
-  configuration: {}
-  downstream_blocks: []
-  executor_config: null
-  executor_type: local_python
-  has_callback: false
-  language: python
-  name: export_pitching_box_scores_gcs
-  retry_config: null
-  status: updated
-  timeout: null
-  type: data_exporter
-  upstream_blocks:
-  - transform_pitching_box_scores
-  uuid: export_pitching_box_scores_gcs
-- all_upstream_blocks_executed: false
-  color: null
-  configuration: {}
-  downstream_blocks: []
-  executor_config: null
-  executor_type: local_python
-  has_callback: false
-  language: python
-  name: export_fielding_box_scores_gcs
-  retry_config: null
-  status: updated
-  timeout: null
-  type: data_exporter
-  upstream_blocks:
-  - transform_fielding_box_scores
-  uuid: export_fielding_box_scores_gcs
 cache_block_output_in_memory: false
 callbacks: []
 concurrency_config: {}
@@ -138,7 +70,7 @@ settings:
 spark_config: {}
 tags: []
 type: python
-updated_at: '2024-03-08 01:46:53'
+updated_at: '2024-03-28 05:46:20'
 uuid: ncaa_baseball_daily_box_score_test
 variables_dir: /home/src/mage_data/magic-zoomcamp
 widgets:

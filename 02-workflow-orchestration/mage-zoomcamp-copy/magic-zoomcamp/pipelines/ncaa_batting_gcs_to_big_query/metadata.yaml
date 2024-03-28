@@ -3,72 +3,46 @@ blocks:
   color: null
   configuration: {}
   downstream_blocks:
-  - transform_staged_data
+  - upload_ncaa_batting_stats_to_big_query
   executor_config: null
   executor_type: local_python
   has_callback: false
   language: python
-  name: load_taxi_gcs
+  name: load_ncaa_batting_stats_from_gcs
   retry_config: null
-  status: updated
+  status: failed
   timeout: null
   type: data_loader
   upstream_blocks: []
-  uuid: load_taxi_gcs
+  uuid: load_ncaa_batting_stats_from_gcs
 - all_upstream_blocks_executed: false
   color: null
   configuration: {}
-  downstream_blocks:
-  - write_taxi_to_bigquery
-  executor_config: null
-  executor_type: local_python
-  has_callback: false
-  language: python
-  name: transform_staged_data
-  retry_config: null
-  status: executed
-  timeout: null
-  type: transformer
-  upstream_blocks:
-  - load_taxi_gcs
-  uuid: transform_staged_data
-- all_upstream_blocks_executed: false
-  color: null
-  configuration:
-    data_provider: bigquery
-    data_provider_profile: default
-    data_provider_schema: ny_taxi
-    data_provider_table: yellow_cab_data
-    dbt: {}
-    disable_query_preprocessing: false
-    export_write_policy: replace
-    limit: 1000
-    use_raw_sql: false
   downstream_blocks: []
   executor_config: null
   executor_type: local_python
   has_callback: false
-  language: sql
-  name: write_taxi_to_bigquery
+  language: python
+  name: upload_ncaa_batting_stats_to_big_query
   retry_config: null
   status: executed
   timeout: null
   type: data_exporter
   upstream_blocks:
-  - transform_staged_data
-  uuid: write_taxi_to_bigquery
+  - load_ncaa_batting_stats_from_gcs
+  uuid: upload_ncaa_batting_stats_to_big_query
 cache_block_output_in_memory: false
 callbacks: []
 concurrency_config: {}
 conditionals: []
-created_at: '2024-01-31 05:28:06.215530+00:00'
+created_at: '2024-03-27 02:32:10.310060+00:00'
 data_integration: null
 description: null
 executor_config: {}
 executor_count: 1
 executor_type: null
 extensions: {}
-name: gcs_to_big_query
+name: ncaa_batting_gcs_to_big_query
 notification_config: {}
 remote_variables_dir: null
 retry_config: {}
@@ -78,7 +52,7 @@ settings:
 spark_config: {}
 tags: []
 type: python
-updated_at: '2024-03-27 05:31:10'
-uuid: gcs_to_big_query
+updated_at: '2024-03-28 05:46:16'
+uuid: ncaa_batting_gcs_to_big_query
 variables_dir: /home/src/mage_data/magic-zoomcamp
 widgets: []

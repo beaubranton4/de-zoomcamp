@@ -6,6 +6,9 @@ import pandas as pd
 import re
 from requests import Session
 from datetime import datetime, timedelta
+from google.cloud import storage
+from os import path
+from mage_ai.settings.repo import get_repo_path
 
 if 'data_loader' not in globals():
     from mage_ai.data_preparation.decorators import data_loader
@@ -14,6 +17,27 @@ if 'test' not in globals():
 
 # GET request options
 _HEADERS = {'User-Agent': 'Mozilla/5.0'}
+
+# Define variables for ingestion script
+sport_code = "MBA"
+academic_year = "2024"
+division = "1"
+
+#CONVERT TO A FUNCTION THAT READS WHICH DATES ARE NOT PRESENT IN GCS
+#FROM START OF SEASON 2/16/2024 TO TODAY'S DATE - 1. Ok to rescrape as safeguard
+#FUNCTION WILL RETURN LIST OF ALL DATES THAT HAVE NOT BEEN POPULATED YET
+#TURN THIS INTO A GLOBAL VARIABLE
+# start_date_str = "02/16/2024"
+# end_date_str = "03/26/2024"
+
+# start_date = datetime.strptime(start_date_str, "%m/%d/%Y")
+# end_date = datetime.strptime(end_date_str, "%m/%d/%Y")
+# date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+
+config_path = path.join(get_repo_path(), 'io_config.yaml')
+config_profile = 'default'
+bucket_name = 'mage_zoomcamp_beau_branton_bucket'
+prefix = 'd1_baseball_project/batting_box_scores_test/date='
 
 #Open webpage and locate home and away tables to scrape boxstats
 def get_stats(url):
@@ -50,12 +74,10 @@ def get_team_names(table_html):
     rows = soup.find_all('tr')
 
     # Get the team names and remove the record in parentheses
-    away_team_name = rows[1].find('a').text.split(' (')[0].strip()
-    home_team_name = rows[2].find('a').text.split(' (')[0].strip()
+    away_team_name = rows[1].find('a').text.rsplit(' (', 1)[0].strip()
+    home_team_name = rows[2].find('a').text.rsplit(' (', 1)[0].strip()
 
     return {"Away Team": away_team_name, "Home Team": home_team_name}
-
-from bs4 import BeautifulSoup
 
 def get_game_info(table_html):
     # Parse the HTML content
@@ -93,109 +115,116 @@ def get_box_score_links(html):
     links = [a['href'] for a in a_tags if "box_score" in a['href']]
     return links
 
+def extract_dates(object_keys):
+    dates = []
+    for key in object_keys:
+        key = urllib.parse.unquote(key)
+        parts = key.split('/')
+        for part in parts:
+            if part.startswith('date='):
+                date = part[len('date='):].split('%')[0]
+                dates.append(date)
+    return dates
+
+def get_gcs_game_dates_missing(bucket_name, prefix):
+    
+    #Obtain dates for data that exists in Google Cloud Storage
+    client = storage.Client()
+    bucket = client.get_bucket(bucket_name)
+    blobs = bucket.list_blobs(prefix=prefix)
+    object_keys = [blob.name for blob in blobs if blob.name.endswith('.parquet')]
+    date_strings = extract_dates(object_keys)
+    dates = [date_string for date_string in date_strings]
+    
+    #Get list of all dates since start of seasone until today
+    start_date_str = '02/16/2024' #Replace with automatic variable for first day of season
+    end_date = datetime.now().date()
+    start_date = datetime.strptime(start_date_str, "%m/%d/%Y").date()
+    all_dates = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+    
+    #Return the difference between those lists
+    missing_dates = [date for date in all_dates if date not in dates]
+    return missing_dates
+
 @data_loader
 def load_data(*args, **kwargs):
-
-    # Start the timer
-    start_time = time.time()
-
-    # Define variables for ingestion script
-    sport_code = "MBA"
-    academic_year = "2024"
-    division = "1"
-    start_date_str = "03/04/2024"
-    end_date_str = "03/04/2024"
-
-    start_date = datetime.strptime(start_date_str, "%m/%d/%Y")
-    end_date = datetime.strptime(end_date_str, "%m/%d/%Y")
-    date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
-
-    # Print the date range
-    for game_date in date_range:
+    # return none
+    # # Start the timer
+    # start_time = time.time()
+    date_range = get_gcs_game_dates_missing(bucket_name,prefix)
+    print(date_range)
+    return None
+    # # Create empty dataframes for final stats
+    # final_batting_df = pd.DataFrame()
+    # for game_date in date_range:
         
-        # Construct the base URL
-        base_url = "https://stats.ncaa.org/contests/livestream_scoreboards"
+    #     # Construct the base URL
+    #     base_url = "https://stats.ncaa.org/contests/livestream_scoreboards"       
+    #     # Create a dictionary of parameters
+    #     params = {
+    #         "utf8": "✓",
+    #         "sport_code": sport_code,
+    #         "academic_year": academic_year,
+    #         "division": division,
+    #         "game_date": game_date,
+    #     }
         
-        # Create a dictionary of parameters
-        params = {
-            "utf8": "✓",
-            "sport_code": sport_code,
-            "academic_year": academic_year,
-            "division": division,
-            "game_date": game_date,
-        }
+    #     with Session() as s:
+    #         r = s.get(base_url, params=params, headers=_HEADERS)
+    #     if r.status_code == 403:
+    #         print('An error occurred with the GET Request')
+    #         print('403 Error: NCAA blocked request')
         
-        with Session() as s:
-            r = s.get(base_url, params=params, headers=_HEADERS)
-        if r.status_code == 403:
-            print('An error occurred with the GET Request')
-            print('403 Error: NCAA blocked request')
-        
-        # Create empty dataframes for final stats
-        final_batting_df = pd.DataFrame()
-        final_pitching_df = pd.DataFrame()
-        final_fielding_df = pd.DataFrame()
-        final_games_per_day = pd.DataFrame()
-        
-        #Retrieve all links to game box score webpages
-        game_links = get_box_score_links(r.text)
-        num_games = 0    
-        for game in game_links:
-            num_games+=1
-            url = 'https://stats.ncaa.org'+game
-            print(f"Getting stats from: {url}")
+    #     #Retrieve all links to game box score webpages
+    #     game_links = get_box_score_links(r.text)
+    #     num_games = 0    
+    #     for game in game_links:
+    #         num_games+=1
+    #         url = 'https://stats.ncaa.org'+game
+    #         # print(f"Getting stats from: {url}")
             
-            #------------------------GET URLS FOR BATTING,PITCHING,FIELDING
-            with Session() as s:
-                r = s.get(url, headers=_HEADERS)
-            if r.status_code == 403:
-                print('An error occurred with the GET Request')
-                print('403 Error: NCAA blocked request')
-            soup = BeautifulSoup(r.text, features='lxml')
+    #         #------------------------GET URLS FOR BATTING,PITCHING,FIELDING
+    #         with Session() as s:
+    #             r = s.get(url, headers=_HEADERS)
+    #         if r.status_code == 403:
+    #             print('An error occurred with the GET Request')
+    #             print('403 Error: NCAA blocked request')
+    #         soup = BeautifulSoup(r.text, features='lxml')
             
-            # Find the table element that contains the player data
-            tables = soup.find_all("table")
+    #         # Find the table element that contains the player data
+    #         tables = soup.find_all("table")
             
-            team_names = get_team_names(tables[0].prettify())
-            game_info = get_game_info(tables[2].prettify())
-            stat_type = tables[4].find_all('a')
+    #         team_names = get_team_names(tables[0].prettify())
+    #         game_info = get_game_info(tables[2].prettify())
+    #         stat_type = tables[4].find_all('a')
             
             
-            #Store URLs for batting, pitching and fielding box scores
-            urls = [stat_type[0]['href'], stat_type[1]['href'], stat_type[2]['href']]
+    #         #Store URLs for batting
+    #         url = stat_type[0]['href']
 
-            # Get the home and away stats for each stat type
-            for i, url in enumerate(urls):
-                away_df, home_df = get_stats(url)  
-                ##MAKE INTO FUNCTION
-                away_df['game_id'] =  int(re.search(r'\d+', game).group())
-                home_df['game_id'] = int(re.search(r'\d+', game).group())
-                away_df['team'] = team_names["Away Team"]
-                home_df['team'] = team_names["Home Team"]
-                away_df['date'] = game_date
-                home_df['date'] = game_date
-                away_df['location'] = game_info["Location"]
-                home_df['location'] = game_info["Location"]
-                away_df['attendance'] = game_info["Attendance"]
-                home_df['attendance'] = game_info["Attendance"]
-                
-                # Append away and home stats to the final dataframe
-                if i == 0:  # Batting stats
-                    final_batting_df = pd.concat([final_batting_df, away_df, home_df])
-                elif i == 1:  # Pitching stats
-                    final_pitching_df = pd.concat([final_pitching_df, away_df, home_df])
-                elif i == 2:  # Fielding stats
-                    final_fielding_df = pd.concat([final_fielding_df, away_df, home_df])
+    #         # Get the home and away stats for each stat type
+            
+    #         away_df, home_df = get_stats(url)  
+    #         ##MAKE INTO FUNCTION
+    #         away_df['game_id'] =  int(re.search(r'\d+', game).group())
+    #         home_df['game_id'] = int(re.search(r'\d+', game).group())
+    #         away_df['team'] = team_names["Away Team"]
+    #         home_df['team'] = team_names["Home Team"]
+    #         away_df['date'] = game_date
+    #         home_df['date'] = game_date
+    #         away_df['location'] = game_info["Location"]
+    #         home_df['location'] = game_info["Location"]
+    #         away_df['attendance'] = game_info["Attendance"]
+    #         home_df['attendance'] = game_info["Attendance"]
+            
+    #         # Append away and home stats to the final dataframe
+    #         final_batting_df = pd.concat([final_batting_df, away_df, home_df])
 
-        print(f"Finished scraping data from {num_games} games on {game_date}")
-        new_row = pd.DataFrame({"Date": [game_date], "num_games": [num_games]})
-        final_games_per_day = pd.concat([final_games_per_day, new_row], ignore_index=True)
-        
-    # End the timer and print the elapsed time
-    end_time = time.time()
-    print(f"Time taken: {end_time - start_time} seconds")
-
-    return final_batting_df, final_pitching_df, final_fielding_df
+    #     print(f"Finished scraping data from {num_games} games on {game_date}")
+    # # End the timer and print the elapsed time
+    # end_time = time.time()
+    # print(f"Time taken: {end_time - start_time} seconds")
+    # return final_batting_df
 
 @test
 def test_output(output, *args) -> None:
